@@ -1,4 +1,3 @@
-import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { isAuthed, getRole, type UserRole } from "../lib/auth";
 
@@ -6,8 +5,9 @@ type Props = { children: React.ReactElement; allowedRoles?: UserRole[] };
 
 const roleHome: Record<UserRole, string> = {
   student: "/student/dashboard",
-  doctor: "/instructor/dashboard",
-  admin: "/instructor/dashboard",
+  doctor: "/doctor/dashboard",
+  admin: "/admin/dashboard",
+  instructor: "/instructor/dashboard",
 };
 
 export default function ProtectedRoute({ children, allowedRoles }: Props) {
