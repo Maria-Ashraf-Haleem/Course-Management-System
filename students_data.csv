@@ -1,0 +1,11 @@
+student_id,student_number,full_name,email,phone,year_level,status,graduation_year,current_status,notes,created_at
+1,1357,Tadro,tadoade25@gmail.com,01210620867,Fourth,Active,,,,2025-09-15 13:27:42
+2,2468,Sara,sara12@gmail.com,01098765432,Third,Active,,,,2025-09-15 14:10:00
+3,3698,Ahmed,ahmed88@gmail.com,01122334455,Second,Inactive,,,,2025-09-15 15:05:10
+4,4821,Mona,mona77@gmail.com,01234567891,First,Active,,,,2025-09-15 16:22:30
+5,5913,Khaled,khaled90@gmail.com,01011122334,Fourth,Active,,,,2025-09-15 16:45:50
+6,6789,Nora,nora55@gmail.com,01155667788,Third,Inactive,,,,2025-09-15 17:05:15
+7,7210,Omar,omar123@gmail.com,01299887766,Second,Active,,,,2025-09-15 17:30:45
+8,8345,Layla,layla33@gmail.com,01022334455,First,Active,,,,2025-09-15 18:00:00
+9,9476,Hassan,hassan22@gmail.com,01233445566,Fourth,Inactive,,,,2025-09-15 18:20:20
+10,1054,Dina,dina77@gmail.com,01044556677,Third,Active,,,,2025-09-15 18:40:35

@@ -1,0 +1,20 @@
+# Sample student import file
+# Format: full_name	student_id	university_email	phone_number	year_level	status	graduation_year	notes
+# You can use tab-separated or comma-separated values
+# Minimum required: full_name, student_id
+
+# Tab-separated format (recommended):
+John Doe	DS2024001	john.doe@dental.edu	+1-555-0101	Fourth	Active	2024	Excellent student with strong clinical skills
+Jane Smith	DS2024002	jane.smith@dental.edu	+1-555-0201	Fourth	Active	2024	Strong academic performance, leadership qualities
+Mike Johnson	DS2024003	mike.johnson@dental.edu	+1-555-0301	Third	Active	2025	Dedicated student with research interests
+
+# Comma-separated format also works:
+Sarah Wilson,DS2024004,sarah.wilson@dental.edu,+1-555-0401,Fourth,Active,2024,Outstanding practical skills
+David Brown,DS2024005,david.brown@dental.edu,+1-555-0501,Third,Active,2025,Consistent performance across all subjects
+
+# Minimal format (only full name and student ID):
+Emily Davis,DS2024006
+Robert Garcia,DS2024007
+
+# Valid year levels: First, Second, Third, Fourth, Fifth
+# Valid statuses: Active, Inactive, Graduated, Suspended

@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* your layers below are fine */
+@layer base {
+  html,
+  body {
+    @apply bg-white text-black;
+  }
+  input,
+  select,
+  textarea {
+    @apply text-black placeholder-gray-500 bg-white;
+  }
+  label {
+    @apply text-sm text-black;
+  }
+}
+@layer components {
+  .auth-shell {
+    @apply min-h-screen flex items-center justify-center p-6 bg-gradient-to-b from-blue-100 to-white;
+  }
+  .auth-card {
+    @apply w-full max-w-md rounded-2xl border border-blue-200 bg-white p-6 shadow-lg animate-fade-in;
+  }
+  .input {
+    @apply w-full rounded-lg border border-gray-300 px-3 py-2;
+  }
+  .select {
+    @apply w-full rounded-lg border border-gray-300 px-3 py-2;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center w-full rounded-lg bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 font-medium;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in {
+  animation: fadeIn 0.25s ease-out;
+}
