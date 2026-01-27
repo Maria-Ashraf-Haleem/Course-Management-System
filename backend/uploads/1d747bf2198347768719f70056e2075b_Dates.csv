@@ -1,0 +1,21 @@
+Subject,Start Date,Start Time,End Date,End Time,Description,Location
+Event One,10/1/2025,10:00 AM,10/1/2025,11:00 AM,First test event,Online
+Event Two,10/2/2025,2:00 PM,10/2/2025,3:30 PM,Second test event,Cairo
+Event Three,10/3/2025,9:00 AM,10/3/2025,9:30 AM,Third test event,Office
+Team Meeting,10/4/2025,11:00 AM,10/4/2025,12:00 PM,Weekly sync with team,Meeting Room A
+Doctor Appointment,10/5/2025,3:00 PM,10/5/2025,3:30 PM,Check-up with Dr. Smith,Clinic
+Project Deadline,10/6/2025,9:00 AM,10/6/2025,10:00 AM,Submit final project report,Online
+Lunch with Sarah,10/7/2025,1:00 PM,10/7/2025,2:00 PM,Casual lunch meeting,Cafe Downtown
+Workshop,10/8/2025,10:30 AM,10/8/2025,12:30 PM,AI & Data Science Workshop,University Hall
+Flight to Dubai,10/9/2025,6:00 AM,10/9/2025,9:00 AM,Travel for conference,Airport
+Conference,10/10/2025,10:00 AM,10/10/2025,4:00 PM,Annual Tech Conference,Dubai Expo Center
+Dinner with Family,10/11/2025,7:00 PM,10/11/2025,9:00 PM,Family dinner,Home
+Client Presentation,10/12/2025,2:00 PM,10/12/2025,3:00 PM,Present new design to client,Client Office
+Morning Jog,10/13/2025,7:00 AM,10/13/2025,7:45 AM,Jogging session in park,City Park
+Hackathon,10/14/2025,9:00 AM,10/14/2025,6:00 PM,24-hour coding challenge,Tech Hub
+Coffee Chat,10/15/2025,4:00 PM,10/15/2025,4:30 PM,Quick coffee with Alex,Coffee Shop
+Training Session,10/16/2025,11:00 AM,10/16/2025,1:00 PM,Machine Learning Training,Online
+Board Meeting,10/17/2025,9:30 AM,10/17/2025,11:30 AM,Quarterly business review,Head Office
+Webinar,10/18/2025,5:00 PM,10/18/2025,6:00 PM,Cloud Computing Trends Webinar,Online
+Birthday Party,10/19/2025,8:00 PM,10/19/2025,11:00 PM,John’s Birthday Celebration,Restaurant
+Code Review,10/20/2025,2:30 PM,10/20/2025,3:30 PM,Review project pull requests,Remote

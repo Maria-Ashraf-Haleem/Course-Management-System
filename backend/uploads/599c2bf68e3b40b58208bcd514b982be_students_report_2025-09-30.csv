@@ -1,0 +1,18 @@
+student_id,student_number,full_name,email,phone,gpa,courses_count,courses_list,average_grade,total_assignments,total_submissions
+1,ST001,Tadrous Adel William,tadrous.william@email.com,1001234567,,2,"DS101, DS310",0.0,0,0
+2,ST002,Asmaa Samir Mohamed,asmaa.mohamed@email.com,1112345678,,2,"DS205, DS505",0.0,0,0
+3,ST003,david mamdouh labeb,david.labeb@email.com,1223456789,,1,DS101,0.0,0,0
+4,ST004,Abdelrahman Ali Abdelrahman,abdelrahman.ali@email.com,1554567890,,1,DS420,0.0,0,0
+5,ST005,Rafik Botros Zarif,rafik.zarif@email.com,1005678901,,2,"DS205, DS505",0.0,0,0
+6,ST006,Amr Mohamed Abdel Hameed,amr.hameed@email.com,1116789012,,1,DS101,0.0,0,0
+7,ST007,Maria Ashraf Haleem,maria.haleem@email.com,1227890123,,1,DS310,0.0,0,0
+8,ST008,Rahma Nasr Eldin Mohamed,rahma.mohamed@email.com,1558901234,,1,DS420,0.0,0,0
+9,ST009,Yahia Mahmoud Farouk,yahia.farouk@email.com,1009012345,,1,DS205,0.0,0,0
+10,ST010,Yahya Mohamed Mostafa,yahya.mostafa@email.com,1110123456,,1,DS505,0.0,0,0
+11,ST011,Mostafa Medhat Atif,mostafa.atif@email.com,1221234567,,1,DS101,0.0,0,0
+12,ST012,Mohamed Esam Eldin Mohamed,mohamed.esame@email.com,1552345678,,1,DS310,0.0,0,0
+13,ST013,Ahmed Saad Hamouda,ahmed.hamouda@email.com,1003456789,,1,DS420,0.0,0,0
+14,ST014,abdelaziz hassan foad,abdelaziz.foad@email.com,1114567890,,1,DS205,0.0,0,0
+15,ST015,Karen Medhat Zaher,karen.zaher@email.com,1225678901,,1,DS505,0.0,0,0
+16,ST016,Aya Mohammed Rayan,aya.rayan@email.com,1556789012,,1,DS101,0.0,0,0
+17,ST017,Mohamed kamal,mohamed.kamal@email.com,1007890123,,1,DS310,0.0,0,0

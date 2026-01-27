@@ -1,0 +1,5 @@
+"student_id","student_full_name","student_email","student_phone","avg_grade_percent","attendance_percent","attendance_present","attendance_absent","attendance_late","attendance_excused","attendance_total","Sentiment Analysis with RNNs","Image Classification with CNNs","Handwritten Digit Classification"
+"2","Asmaa Samir Mohamed","asmaa.mohamed@email.com","1112345678","0.0","100.0","2","0","0","0","2","Not submitted","Not submitted","Not submitted"
+"5","Rafik Botros Zarif","rafik.zarif@email.com","1005678901","0.0","50.0","1","1","0","0","2","Not submitted","Not submitted","Not submitted"
+"10","Yahya Mohamed Mostafa","yahya.mostafa@email.com","1110123456","0.0","50.0","1","0","1","0","2","Not submitted","Not submitted","Not submitted"
+"15","Karen Medhat Zaher","karen.zaher@email.com","1225678901","0.0","100.0","1","0","0","1","2","Not submitted","Not submitted","Not submitted"

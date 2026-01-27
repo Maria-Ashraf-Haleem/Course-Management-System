@@ -1,0 +1,4 @@
+"student_id","student_full_name","student_email","student_phone","avg_grade_percent","attendance_percent","attendance_present","attendance_absent","attendance_late","attendance_excused","attendance_total","important","Predict House Prices"
+"3","Mohamed Kamal","MohamedK@gmail.com","01234567812","9.1","0.0","0","0","0","0","0","Not submitted","9.1/100"
+"6","Abdelaziz hassan","Abdelaziz@gmail.com","01210620794","100.0","0.0","0","0","0","0","0","100/100","Not submitted"
+"5","Maria Ashraf","Maria@gmail.com","01210620478","9.0","0.0","0","0","0","0","0","Not submitted","9/100"

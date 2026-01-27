@@ -1,0 +1,26 @@
+student_id,student_number,full_name,email,phone,gpa,courses_count,courses_list,average_grade,total_assignments,total_submissions
+1,ST161,John Baker,john.baker@email.com,1009012345,3.7,3,"BD87, DS12, WP23",7.42,4,4
+2,ST162,Sarah Chen,sarah.chen@email.com,1110123456,,1,WP23,8.0,1,1
+3,ST163,Mark Davis,mark.davis@email.com,1221234567,,1,DV78,0.0,0,0
+4,ST164,Emily Garcia,emily.garcia@email.com,1552345678,,1,ML65,0.0,0,0
+5,ST165,Michael Hall,michael.hall@email.com,1003456789,,1,BD87,0.0,0,0
+6,ST166,Jessica Lee,jessica.lee@email.com,1114567890,,1,DS12,0.0,0,0
+7,ST167,David Miller,david.miller@email.com,1225678901,,1,WP23,0.0,0,0
+8,ST168,Laura Rodriguez,laura.rodriguez@email.com,1556789012,,1,DV78,0.0,0,0
+9,ST169,Kevin Smith,kevin.smith@email.com,1007890123,,1,ML65,0.0,0,0
+10,ST170,Ashley Wilson,ashley.wilson@email.com,1118901234,,1,BD87,0.0,0,0
+11,ST171,Andrew Brown,andrew.brown@email.com,1229012345,,1,DS12,0.0,0,0
+12,ST172,Megan Jones,megan.jones@email.com,1550123456,,1,WP23,0.0,0,0
+13,ST173,Daniel Kim,daniel.kim@email.com,1001234567,,1,DV78,0.0,0,0
+14,ST174,Samantha Nguyen,samantha.nguyen@email.com,1112345678,,1,ML65,0.0,0,0
+15,ST175,Jacob Evans,jacob.evans@email.com,1223456789,,1,BD87,0.0,0,0
+16,ST176,Madison Carter,madison.carter@email.com,1554567890,,1,DS12,0.0,0,0
+17,ST177,Christopher Davis,christopher.davis@email.com,1005678901,,1,WP23,0.0,0,0
+18,ST178,Olivia Flores,olivia.flores@email.com,1116789012,,1,DV78,0.0,0,0
+19,ST179,Ryan Hernandez,ryan.hernandez@email.com,1227890123,,1,ML65,0.0,0,0
+20,ST180,Alexis Lopez,alexis.lopez@email.com,1558901234,,1,BD87,0.0,0,0
+21,ST181,Anthony Perez,anthony.perez@email.com,1009012345,,1,DS12,0.0,0,0
+22,ST182,Michelle Scott,michelle.scott@email.com,1110123456,,2,"ML65, WP23",0.0,0,0
+23,ST183,Tyler Turner,tyler.turner@email.com,1221234567,,2,"DS12, DV78",0.0,0,0
+24,ST184,Lauren White,lauren.white@email.com,1552345678,,3,"BD87, DV78, ML65",0.0,0,0
+25,ST185,Brandon King,brandon.king@email.com,1003456789,,5,"BD87, DS12, DV78, ML65, WP23",0.0,0,0

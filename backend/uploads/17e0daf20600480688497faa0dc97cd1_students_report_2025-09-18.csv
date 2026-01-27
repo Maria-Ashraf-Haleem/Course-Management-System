@@ -1,0 +1,20 @@
+student_id,student_number,full_name,email,phone,gpa,year_level,status,courses_count,courses_list,average_grade
+10,3698,Ahmed,ahmed88@gmail.com,01122334455,,Second,Inactive,0,,0
+6,DS2024005,David Brown,david.brown@dental.edu,+1-555-0501,,Third,Active,0,,0
+17,1054,Dina,dina77@gmail.com,01044556677,,Third,Active,0,,0
+7,DS2024006,Emily Davis,,,,Fourth,Active,0,,0
+16,9476,Hassan,hassan22@gmail.com,01233445566,,Fourth,Inactive,0,,0
+3,DS2024002,Jane Smith,jane.smith@dental.edu,+1-555-0201,,Fourth,Active,0,,0
+2,DS2024001,John Doe,john.doe@dental.edu,+1-555-0101,,Fourth,Active,0,,0
+12,5913,Khaled,khaled90@gmail.com,01011122334,,Fourth,Active,0,,0
+15,8345,Layla,layla33@gmail.com,01022334455,,First,Active,0,,0
+4,DS2024003,Mike Johnson,mike.johnson@dental.edu,+1-555-0301,,Third,Active,0,,0
+11,4821,Mona,mona77@gmail.com,01234567891,,First,Active,0,,0
+13,6789,Nora,nora55@gmail.com,01155667788,,Third,Inactive,0,,0
+14,7210,Omar,omar123@gmail.com,01299887766,,Second,Active,0,,0
+8,DS2024007,Robert Garcia,,,,Fourth,Active,0,,0
+9,2468,Sara,sara12@gmail.com,01098765432,,Third,Active,0,,0
+5,DS2024004,Sarah Wilson,sarah.wilson@dental.edu,+1-555-0401,,Fourth,Active,0,,0
+18,1023,Sherif Tarek Hassan,sherif.tarek23@dent.au.edu.eg,01250125126,,Fourth,Active,1,das,0
+1,1357,Tadro,tadoade25@gmail.com,01210620867,,Fourth,Active,1,f,0
+19,3331,abd-alaziz hassan,zezohassan768@gmail.com,01007847742,,Fourth,Active,1,asfaf,0

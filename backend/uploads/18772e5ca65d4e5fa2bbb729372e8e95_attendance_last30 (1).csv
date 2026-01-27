@@ -1,0 +1,11 @@
+﻿attendance_id,date,lecture_id,student_id,status,notes
+11,2025-08-21,6,11,present,
+10,2025-08-21,6,14,present,
+9,2025-08-21,5,7,present,
+8,2025-08-21,5,9,excused,
+6,2025-08-21,7,9,absent,
+5,2025-08-21,8,14,late,
+12,2025-08-19,5,13,present,
+3,2025-08-06,5,13,excused,
+4,2025-08-01,8,7,present,
+7,2025-07-31,5,8,excused,

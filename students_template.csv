@@ -1,0 +1,6 @@
+student_number,full_name,email,phone,password,course_id,notes
+ST001,John Smith,john.smith@email.com,+1234567890,123456789,1,
+ST002,Jane Doe,jane.doe@email.com,+1234567891,123456789,4,
+ST003,Mike Johnson,mike.johnson@email.com,+1234567892,123456789,2,
+ST004,Sarah Wilson,sarah.wilson@email.com,+1234567893,123456789,3,
+ST005,David Brown,david.brown@email.com,+1234567894,123456789,1,Excellent student
