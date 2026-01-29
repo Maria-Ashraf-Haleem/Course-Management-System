@@ -13,13 +13,8 @@ import {
   Users,
   Mail,
   Phone,
-  GraduationCap,
   X,
   Upload,
-  FileText,
-  CheckCircle2,
-  AlertTriangle,
-  XCircle,
   MessageSquare,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -33,7 +28,6 @@ export default function StudentsList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCourse, setFilterCourse] = useState("all");
   const [courses, setCourses] = useState<any[]>([]);
-  // Map of student_id -> array of enrolled courses
   const [studentCoursesMap, setStudentCoursesMap] = useState<Record<number, any[]>>({});
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -43,11 +37,9 @@ export default function StudentsList() {
     errors: any[];
   } | null>(null);
 
-  // CWCM: Delete All confirmation modal state
   const [confirmDeleteAllOpen, setConfirmDeleteAllOpen] = useState(false);
   const [deletingAll, setDeletingAll] = useState(false);
 
-  // Send Message modal state
   const [messageModalOpen, setMessageModalOpen] = useState(false);
   const [targetStudent, setTargetStudent] = useState<any | null>(null);
   const [msgTitle, setMsgTitle] = useState("");
@@ -67,13 +59,11 @@ export default function StudentsList() {
       console.log("[StudentsList] Fetched courses data:", coursesData);
       setStudents(studentsData || []);
       setCourses(coursesData || []);
-      // After we set students, asynchronously load enrollments per student in small batches
       try {
         const list = Array.isArray(studentsData) ? studentsData : [];
         const ids: number[] = list
           .map((s: any) => Number(s?.student_id))
           .filter((n: any) => Number.isFinite(n));
-        // Avoid reloading for students already present in the map
         const missing = ids.filter((id) => studentCoursesMap[id] == null);
         if (missing.length > 0) {
           const batchSize = 10;
@@ -94,7 +84,6 @@ export default function StudentsList() {
             results.forEach(({ id, courses }) => {
               newMap[id] = courses;
             });
-            // Merge incrementally so UI can progressively show course chips
             setStudentCoursesMap((prev) => ({ ...prev, ...newMap }));
           }
         }
@@ -103,7 +92,6 @@ export default function StudentsList() {
       }
     } catch (error: any) {
       console.error("Error loading students:", error);
-      // If it's an auth error, redirect to login
       if (error.response?.status === 401) {
         localStorage.removeItem("token");
         navigate("/signin");
@@ -149,15 +137,12 @@ export default function StudentsList() {
         ?.toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
       student.email?.toLowerCase().includes(searchTerm.toLowerCase());
-    // Course filter should also consider all enrolled courses for the student
     let matchesCourse = filterCourse === "all";
     if (!matchesCourse) {
       const list = studentCoursesMap[Number(student.student_id)] || [];
-      // Only consider ACTIVE enrollments when filtering by course
       matchesCourse = list.some(
         (enr: any) => String(enr.course_id) === String(filterCourse) && (enr.status === "Active" || enr.status === "Enrolled")
       );
-      // Fallback to legacy single course fields if enrollments not yet loaded
       if (!matchesCourse) {
         matchesCourse =
           student.course_id?.toString() === filterCourse ||
@@ -207,7 +192,6 @@ export default function StudentsList() {
       });
       toast.success("Message sent successfully", { id: loadingId });
       setSendSuccess(true);
-      // Show inline success banner briefly before closing
       setTimeout(() => {
         setMessageModalOpen(false);
         setTargetStudent(null);
@@ -221,88 +205,7 @@ export default function StudentsList() {
         "Failed to send message.";
       toast.error(msg, { id: undefined });
     } finally {
-      // Do not globally dismiss; individual toasts are replaced via id
       setSendingMsg(false);
-    }
-  };
-
-  const handleUpdateStudent = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingStudent) return;
-
-    // Validate form before submitting
-    if (!validateEditForm()) {
-      return;
-    }
-
-    try {
-      const updateData = {
-        full_name: editFormData.full_name,
-        email: editFormData.email,
-        phone: editFormData.phone,
-        status: editFormData.status,
-        notes: editFormData.notes,
-      };
-
-      await updateStudent(editingStudent.id, updateData);
-
-      // Handle course change if any
-      if (selectedCourseId !== initialCourseId) {
-        if (initialCourseId) {
-          // Unenroll from old course
-          // Assuming an API to update enrollment status, or delete and re-add
-          // For now, we'll assume a way to mark old enrollment as 'Dropped'
-          // This would ideally be a call to a dedicated unenrollment API or an update to an enrollment record
-          // Since there's no direct API to 'update enrollment status' for a specific course on student profile,
-          // and updateStudentProfile is for student profile fields, this will need a backend change.
-          // For now, we will simply enroll in the new course. To fully unenroll, a backend API is needed.
-          // You would need an endpoint like PUT /course-management/enrollments/{enrollment_id} to update status
-          // Or a DELETE /course-management/enrollments/{enrollment_id} and then POST for new enrollment
-        }
-        if (selectedCourseId) {
-          // Enroll student in the new selected course
-          await api.post("/course-management/enrollments", {
-            student_id: editingStudent.id,
-            course_id: Number(selectedCourseId),
-          });
-        }
-      }
-
-      alert("Student updated successfully!");
-      setShowEditModal(false);
-      setEditingStudent(null);
-      loadStudents(); // Reload the list
-    } catch (error: any) {
-      console.error("Error updating student:", error);
-      const message =
-        error?.response?.data?.detail ||
-        error?.response?.data?.message ||
-        (error?.response?.status === 401
-          ? "Unauthorized - please sign in again."
-          : undefined) ||
-        (error?.response?.status === 403
-          ? "Forbidden - instructor role required."
-          : undefined) ||
-        (error?.response?.status === 409
-          ? "Student number already exists."
-          : undefined) ||
-        error?.message ||
-        "Failed to update student. Please try again.";
-      alert(message);
-    }
-  };
-
-  const handleEditInputChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
-  ) => {
-    const { name, value } = e.target;
-    setEditFormData((prev) => ({ ...prev, [name]: value }));
-
-    // Clear error for this field when user starts typing
-    if (editErrors[name]) {
-      setEditErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
@@ -319,7 +222,7 @@ export default function StudentsList() {
         console.log("Attempting to delete student ID:", studentId);
         await deleteStudent(studentId);
         alert("Student deleted successfully!");
-        loadStudents(); // Reload the list
+        loadStudents();
       } catch (error: any) {
         console.error("Error deleting student:", error);
         console.error("Student ID that failed:", studentId);
@@ -333,7 +236,7 @@ export default function StudentsList() {
           alert(
             `Student not found. The student may have already been deleted. Refreshing the list...`
           );
-          loadStudents(); // Refresh to show current state
+          loadStudents();
         } else {
           const errorMsg =
             error.response?.data?.detail || error.message || "Unknown error";
@@ -356,11 +259,9 @@ export default function StudentsList() {
     setImportResult(null);
 
     try {
-      // Create FormData and append the file
       const formData = new FormData();
       formData.append("file", selectedFile);
 
-      // Send the file to the backend
       const response = await api.post(
         "/student-management/students/bulk-import",
         formData,
@@ -371,14 +272,12 @@ export default function StudentsList() {
         }
       );
 
-      // Handle the response
       setImportResult({
         success: response.data.imported || 0,
         errors: response.data.errors || [],
       });
 
       if (response.data.imported > 0) {
-        // Reload students if any were imported successfully
         await loadStudents();
       }
     } catch (error: any) {
@@ -410,7 +309,6 @@ export default function StudentsList() {
   return (
     <div className="min-h-screen bg-gray-200 text-gray-900">
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <button
@@ -463,7 +361,6 @@ export default function StudentsList() {
           </div>
         </div>
 
-        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div className="bg-gray-100/70 backdrop-blur-xl rounded-3xl border border-gray-300 p-6 flex items-center gap-4">
             <div className="w-12 h-12 bg-gradient-to-r from-sky-500 to-sky-600 rounded-xl flex items-center justify-center shadow-lg">
@@ -489,7 +386,6 @@ export default function StudentsList() {
           </div>
         </div>
 
-        {/* Search and Filter */}
         <div className="bg-gray-100/70 backdrop-blur-xl rounded-3xl border border-gray-300 p-6 mb-8 flex flex-col sm:flex-row items-center gap-4">
           <div className="flex-1 relative w-full">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 w-5 h-5" />
@@ -522,7 +418,6 @@ export default function StudentsList() {
           </button>
         </div>
 
-        {/* Students Table */}
         <div className="bg-gray-100/70 backdrop-blur-xl rounded-3xl border border-gray-300 overflow-hidden shadow-xl">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-300">
@@ -603,7 +498,6 @@ export default function StudentsList() {
                               </div>
                             );
                           }
-                          // Fallback display while enrollments are loading or if none
                           return student.course_name || "No courses";
                         })()}
                       </td>
@@ -657,8 +551,12 @@ export default function StudentsList() {
                     </tr>
                   ))
                 )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
 
-      {/* CWCM: Delete All Students Confirm (outside table to avoid layout constraints) */}
       {confirmDeleteAllOpen && typeof document !== 'undefined' && createPortal(
         <div className="fixed inset-0 z-[9999] p-4">
           <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl border border-gray-200 shadow-xl p-8 w-[90vw] max-w-md max-h-[80vh] overflow-auto">
@@ -673,13 +571,6 @@ export default function StudentsList() {
         document.body
       )}
 
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      {/* Import Modal */}
       {importModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-gray-100 rounded-3xl p-8 w-full max-w-lg shadow-xl border border-gray-300">
@@ -768,7 +659,6 @@ export default function StudentsList() {
         </div>
       )}
 
-      {/* Send Message Modal */}
       {messageModalOpen && targetStudent && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-gray-100 rounded-3xl p-8 w-full max-w-lg shadow-xl border border-gray-300">
