@@ -46,11 +46,11 @@ export default function StudentForm() {
         let instructorId = null;
         try {
           const meResponse = await getMe();
-          instructorId = meResponse.data?.id;
+          instructorId = meResponse.data?.id || null;
         } catch {
           console.warn("Could not get instructor ID from /auth/me, falling back to localStorage");
           // Fallback to localStorage
-          instructorId = localStorage.getItem("user_id");
+          instructorId = localStorage.getItem("user_id") || null;
         }
 
         if (!instructorId) {
