@@ -197,7 +197,7 @@ export const generateQuestionsFromPDF = async (
   }
   
   // Build query parameters
-  const types = [];
+  const types: string[] = [];
   if (questionTypes.mcq) types.push("mcq");
   if (questionTypes.trueFalse) types.push("trueFalse");
   if (questionTypes.shortAnswer) types.push("shortAnswer");
