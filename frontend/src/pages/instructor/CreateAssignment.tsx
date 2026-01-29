@@ -233,45 +233,6 @@ export default function CreateAssignment() {
         }
         
         return null;
-        
-        questionText = questionMatch[2].trim();
-        
-        // Check for true/false
-        if (block.match(/true\s*\/\s*false|true or false|t\s*\/\s*f/i)) {
-          type = 'true/false';
-          choices = [
-            { letter: 'A', text: 'True', isCorrect: false },
-            { letter: 'B', text: 'False', isCorrect: false }
-          ];
-        }
-        // Check for multiple choice
-        else if (block.match(/[A-Da-d]\)\s+.+/)) {
-          type = 'multiple choice';
-          const choiceLines = block.match(/[A-Da-d]\)\s+.+?(?=\n[A-D]\)|$)/gi) || [];
-          
-          choiceLines.forEach(line => {
-            const choiceMatch = line.match(/^([A-Da-d])\)\s+(.+)/i);
-            if (choiceMatch) {
-              const isCorrect = block.includes(`Correct Answer: ${choiceMatch[1].toUpperCase()}`) ||
-                              block.includes(`Answer: ${choiceMatch[1].toUpperCase()}`);
-              
-              if (isCorrect) correctAnswer = choiceMatch[1].toUpperCase();
-              
-              choices.push({
-                letter: choiceMatch[1].toUpperCase(),
-                text: choiceMatch[2].trim(),
-                isCorrect
-              });
-            }
-          });
-        }
-        
-        // Clean up question text
-        questionText = questionText
-          .replace(/[A-Da-d]\)\s+.+/g, '')
-          .replace(/\([^)]*\)/g, '')
-          .replace(/\s+/g, ' ')
-          .trim();
       }
       
       // Ensure question ends with a question mark if it's a question
@@ -289,6 +250,8 @@ export default function CreateAssignment() {
         correctAnswer
       };
     }).filter((q): q is ParsedQuestion => q !== null); // Remove any null entries
+
+    return result;
   };
 
   // Parse questions whenever generatedQuestions changes
@@ -467,7 +430,7 @@ export default function CreateAssignment() {
   };
 
   const handleInputChange = (
-    e: React.ChangeEvent<
+    e: React.ChangeEvent
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >
   ) => {
