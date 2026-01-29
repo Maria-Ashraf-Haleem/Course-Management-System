@@ -18,7 +18,7 @@ import {
 } from "../../lib/api";
 
 export default function StudentForm() {
-  console.log("[StudentForm] Component rendered."); // Added for basic console check
+  console.log("[StudentForm] Component rendered.");
   const navigate = useNavigate();
   const { studentId: paramStudentId } = useParams<{ studentId: string }>();
   const isEditing = !!paramStudentId;
@@ -28,7 +28,7 @@ export default function StudentForm() {
     full_name: "",
     email: "",
     phone: "",
-    password: "", // Only for new student, not for editing
+    password: "",
     notes: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,14 +42,12 @@ export default function StudentForm() {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        // First try to get instructor ID from getMe API call
         let instructorId: number | string | null = null;
         try {
           const meResponse = await getMe();
           instructorId = meResponse.data?.id || null;
         } catch {
           console.warn("Could not get instructor ID from /auth/me, falling back to localStorage");
-          // Fallback to localStorage
           instructorId = localStorage.getItem("user_id");
         }
 
@@ -59,7 +57,6 @@ export default function StudentForm() {
           return;
         }
 
-        // Fetch courses created by this instructor only
         const params = { created_by: instructorId };
         const response = await getCourses(params);
         setAvailableCourses(response || []);
@@ -73,10 +70,8 @@ export default function StudentForm() {
     fetchCourses();
   }, []);
 
-  // Reset form data when switching between create/edit modes
   useEffect(() => {
     if (!isEditing) {
-      // Reset form data for new student creation
       setFormData({
         student_number: "",
         full_name: "",
@@ -90,16 +85,12 @@ export default function StudentForm() {
     }
   }, [isEditing]);
 
-  // Load student data if editing
   useEffect(() => {
     if (isEditing && paramStudentId) {
       const fetchStudentData = async () => {
         try {
           console.log("[StudentForm] paramStudentId from URL:", paramStudentId);
-          console.log(
-            "[StudentForm] Fetching profile for studentId:",
-            paramStudentId
-          );
+          console.log("[StudentForm] Fetching profile for studentId:", paramStudentId);
           const { data } = await getStudentProfile(paramStudentId);
           console.log("[StudentForm] Student Profile response:", data);
           setFormData({
@@ -107,21 +98,12 @@ export default function StudentForm() {
             full_name: data.full_name || "",
             email: data.email || "",
             phone: data.phone || "",
-            password: "", // Never pre-fill password
+            password: "",
             notes: data.notes || "",
           });
-          // Pre-select current course
-          console.log(
-            "[StudentForm] Fetching enrollments for studentId:",
-            Number(paramStudentId)
-          );
-          const enrollmentsResponse = await getStudentEnrollments(
-            Number(paramStudentId)
-          );
-          console.log(
-            "[StudentForm] Enrollments response:",
-            enrollmentsResponse
-          );
+          console.log("[StudentForm] Fetching enrollments for studentId:", Number(paramStudentId));
+          const enrollmentsResponse = await getStudentEnrollments(Number(paramStudentId));
+          console.log("[StudentForm] Enrollments response:", enrollmentsResponse);
           const currentEnrollments = enrollmentsResponse.data?.filter(
             (e: any) => e.status === "Active"
           ) || [];
@@ -140,10 +122,8 @@ export default function StudentForm() {
     }
   }, [isEditing, paramStudentId, navigate]);
 
-  // Cleanup effect to reset form when component unmounts
   useEffect(() => {
     return () => {
-      // Reset form data when component unmounts
       setFormData({
         student_number: "",
         full_name: "",
@@ -195,7 +175,6 @@ export default function StudentForm() {
 
     try {
       if (isEditing) {
-        // Update student
         const studentUpdateData: any = {
           full_name: formData.full_name,
           email: formData.email,
@@ -204,17 +183,13 @@ export default function StudentForm() {
         };
         await updateStudentProfile(paramStudentId!, studentUpdateData);
 
-        // Handle course changes if any
         const coursesToAdd = selectedCourses.filter(id => !initialCourses.includes(id));
         const coursesToRemove = initialCourses.filter(id => !selectedCourses.includes(id));
         
-        // Remove from courses that are no longer selected
         for (const courseId of coursesToRemove) {
-          // Note: This would need a proper unenrollment API endpoint
           console.log(`Would unenroll from course ${courseId}`);
         }
         
-        // Add to new courses
         for (const courseId of coursesToAdd) {
           await adminEnrollStudent({
             student_id: Number(paramStudentId!),
@@ -223,7 +198,6 @@ export default function StudentForm() {
         }
         alert("Student updated successfully!");
       } else {
-        // Create student
         const studentCreateData = {
           student_number: formData.student_number,
           full_name: formData.full_name,
@@ -239,10 +213,7 @@ export default function StudentForm() {
 
       navigate("/instructor/students");
     } catch (error: any) {
-      console.error(
-        `Error ${isEditing ? "updating" : "adding"} student:`,
-        error
-      );
+      console.error(`Error ${isEditing ? "updating" : "adding"} student:`, error);
       
       let message = `Failed to ${isEditing ? "update" : "add"} student. Please try again.`;
       
@@ -269,9 +240,7 @@ export default function StudentForm() {
   };
 
   const handleInputChange = (
-    e: React.ChangeEvent
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -281,11 +250,9 @@ export default function StudentForm() {
     }
   };
 
-
   return (
     <div className="min-h-screen bg-gray-200 text-gray-900">
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <button
             onClick={() => navigate("/instructor/students")}
@@ -305,7 +272,6 @@ export default function StudentForm() {
           </div>
         </div>
 
-        {/* Form */}
         <div className="bg-gray-100/70 backdrop-blur-xl rounded-3xl p-8 w-full max-w-4xl mx-auto shadow-xl border border-gray-300">
           <form
             key={isEditing ? `edit-${paramStudentId}` : 'create'}
@@ -313,10 +279,7 @@ export default function StudentForm() {
             className="grid grid-cols-1 md:grid-cols-2 gap-6"
           >
             <div>
-              <label
-                htmlFor="student_number"
-                className="block text-sm font-medium text-gray-800 mb-1"
-              >
+              <label htmlFor="student_number" className="block text-sm font-medium text-gray-800 mb-1">
                 Student Number <span className="text-red-600">*</span>
               </label>
               <input
@@ -329,19 +292,15 @@ export default function StudentForm() {
                   isEditing ? "bg-gray-200 cursor-not-allowed" : ""
                 }`}
                 placeholder="Enter student number"
-                disabled={isEditing} // Student number cannot be changed when editing
+                disabled={isEditing}
               />
               {errors.student_number && (
-                <p className="text-red-600 text-xs mt-1">
-                  {errors.student_number}
-                </p>
+                <p className="text-red-600 text-xs mt-1">{errors.student_number}</p>
               )}
             </div>
+
             <div>
-              <label
-                htmlFor="full_name"
-                className="block text-sm font-medium text-gray-800 mb-1"
-              >
+              <label htmlFor="full_name" className="block text-sm font-medium text-gray-800 mb-1">
                 Full Name <span className="text-red-600">*</span>
               </label>
               <input
@@ -357,11 +316,9 @@ export default function StudentForm() {
                 <p className="text-red-600 text-xs mt-1">{errors.full_name}</p>
               )}
             </div>
+
             <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-800 mb-1"
-              >
+              <label htmlFor="email" className="block text-sm font-medium text-gray-800 mb-1">
                 Email
               </label>
               <input
@@ -378,11 +335,9 @@ export default function StudentForm() {
                 <p className="text-red-600 text-xs mt-1">{errors.email}</p>
               )}
             </div>
+
             <div>
-              <label
-                htmlFor="phone"
-                className="block text-sm font-medium text-gray-800 mb-1"
-              >
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-800 mb-1">
                 Phone
               </label>
               <input
@@ -398,34 +353,30 @@ export default function StudentForm() {
                 <p className="text-red-600 text-xs mt-1">{errors.phone}</p>
               )}
             </div>
+
             {!isEditing && (
               <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-800 mb-1"
-                >
+                <label htmlFor="password" className="block text-sm font-medium text-gray-800 mb-1">
                   Password <span className="text-red-600">*</span>
                 </label>
-                  <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-gray-900 focus:outline-none focus:border-sky-500"
-                    placeholder="Enter password"
-                    autoComplete="new-password"
-                  />
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-gray-900 focus:outline-none focus:border-sky-500"
+                  placeholder="Enter password"
+                  autoComplete="new-password"
+                />
                 {errors.password && (
                   <p className="text-red-600 text-xs mt-1">{errors.password}</p>
                 )}
               </div>
             )}
+
             <div>
-              <label
-                htmlFor="course_ids"
-                className="block text-sm font-medium text-gray-800 mb-1"
-              >
+              <label htmlFor="course_ids" className="block text-sm font-medium text-gray-800 mb-1">
                 Courses <span className="text-red-600">*</span>
               </label>
               {loadingCourses ? (
@@ -468,11 +419,9 @@ export default function StudentForm() {
                 </p>
               )}
             </div>
+
             <div className="md:col-span-2">
-              <label
-                htmlFor="notes"
-                className="block text-sm font-medium text-gray-800 mb-1"
-              >
+              <label htmlFor="notes" className="block text-sm font-medium text-gray-800 mb-1">
                 Notes
               </label>
               <textarea
@@ -483,8 +432,9 @@ export default function StudentForm() {
                 rows={3}
                 className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-gray-900 focus:outline-none focus:border-sky-500"
                 placeholder="Additional notes about the student"
-              ></textarea>
+              />
             </div>
+
             <div className="md:col-span-2 flex justify-end gap-3 mt-6">
               <button
                 type="button"
