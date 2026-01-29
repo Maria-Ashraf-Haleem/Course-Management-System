@@ -8,21 +8,31 @@ import { getToken, clearToken } from "./auth";
 
 /* ------------------------------- Base URL ------------------------------- */
 
-const rawBase =
-  (import.meta.env.VITE_API_URL as string | undefined) ??
-  "http://127.0.0.1:8000";
-const API_BASE_URL = rawBase.replace(/\/+$/, ""); // strip trailing slash for clean joins
+// IMPORTANT:
+// Must match the variable name in Vercel Environment Variables
+// VITE_API_BASE_URL=https://course-management-system-kjcr.onrender.com
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string)?.replace(
+  /\/+$/,
+  ""
+);
+
+if (!API_BASE_URL) {
+  throw new Error(
+    "VITE_API_BASE_URL is not defined. Please set it in Vercel environment variables."
+  );
+}
 
 /* ----------------------------- Axios instance --------------------------- */
 
 export const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 1800000, // increased timeout to 30 minutes (1,800,000 ms) for long-running AI operations
-  withCredentials: false, // we use Bearer token, not cookies
+  timeout: 1800000, // 30 minutes for long AI operations
+  withCredentials: false, // using Bearer token, not cookies
   headers: {
     Accept: "application/json",
   },
 });
+
 
 // Attach Bearer token automatically
 api.interceptors.request.use((config) => {
