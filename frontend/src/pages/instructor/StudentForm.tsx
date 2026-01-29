@@ -43,14 +43,14 @@ export default function StudentForm() {
     const fetchCourses = async () => {
       try {
         // First try to get instructor ID from getMe API call
-        let instructorId = null;
+        let instructorId: number | string | null = null;
         try {
           const meResponse = await getMe();
           instructorId = meResponse.data?.id || null;
         } catch {
           console.warn("Could not get instructor ID from /auth/me, falling back to localStorage");
           // Fallback to localStorage
-          instructorId = localStorage.getItem("user_id") || null;
+          instructorId = localStorage.getItem("user_id");
         }
 
         if (!instructorId) {
@@ -269,7 +269,7 @@ export default function StudentForm() {
   };
 
   const handleInputChange = (
-    e: React.ChangeEvent<
+    e: React.ChangeEvent
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >
   ) => {
