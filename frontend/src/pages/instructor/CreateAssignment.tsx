@@ -101,7 +101,7 @@ export default function CreateAssignment() {
         
         const questionMatch = block.match(/Question:([\s\S]+?)(?=Answer:|$)/i) || 
                             block.match(/([\s\S]+?)(?=Answer:|$)/i) ||
-                            [null, block];
+                            ['', block];
         
         let answerMatch = block.match(/Answer:\s*(True|False)/i);
         if (!answerMatch) {
@@ -1009,7 +1009,7 @@ export default function CreateAssignment() {
                       </div>
                     </div>
                   )}
-                  {process.env.NODE_ENV === 'development' && assignmentPdf && (
+                  {import.meta.env.DEV && assignmentPdf && (
                     <div className="mt-2 text-xs text-gray-500">
                       Debug: PDF loaded - {assignmentPdf.name} ({assignmentPdf.size} bytes, {assignmentPdf.type})
                     </div>
