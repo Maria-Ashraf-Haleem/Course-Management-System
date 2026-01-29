@@ -421,18 +421,7 @@ export default function StudentSettings() {
                       onChange={(e) =>
                         handleInputChange("date_of_birth", e.target.value)
                       }
-                      className="w-full px-4 py-3 bg-gray-100/70 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent pr-10"
-                      style={{
-                        WebkitAppearance: "none",
-                        MozAppearance: "none",
-                        MsAppearance: "none",
-                        appearance: "none",
-                        // Hide native calendar picker indicator in Webkit browsers
-                        WebkitCalendarPickerIndicator: { display: "none" },
-                        // Hide native calendar picker indicator in Firefox
-                        MozAppearance: "textfield", // Ensure it's treated as a text field for Firefox
-                        MozCalendarPickerIndicator: { display: "none" },
-                      }}
+                      className="w-full px-4 py-3 bg-gray-100/70 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent pr-10 date-input"
                     />
                     <CalendarDays
                       className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 cursor-pointer z-10 pointer-events-auto"
@@ -652,6 +641,17 @@ export default function StudentSettings() {
           </div>
         </div>
       </div>
+
+      {/* CSS to hide date picker icon */}
+      <style>{`
+        .date-input::-webkit-calendar-picker-indicator {
+          display: none;
+          -webkit-appearance: none;
+        }
+        .date-input::-moz-calendar-picker-indicator {
+          display: none;
+        }
+      `}</style>
     </div>
   );
 }
