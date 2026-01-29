@@ -64,155 +64,207 @@ export default function CreateAssignment() {
 
   // Parse questions from generated text
    // Parse questions from generated text
-  const parseQuestions = (text: string): ParsedQuestion[] => {
-    if (!text) return [];
+const parseQuestions = (text: string): ParsedQuestion[] => {
+  if (!text) return [];
 
-    // Normalize
-    const normalizedText = text
-      .replace(/\r\n/g, "\n")
-      .replace(/\r/g, "\n")
-      .replace(/\n{3,}/g, "\n\n")
-      .trim();
+  // Normalize
+  const normalizedText = text
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 
-    // Split into blocks
-    let questionBlocks = normalizedText.split(
-      /(?=TrueFalse:|MCQ:|\d+\.\s|Question\s*\d*:?\s*)/i
-    );
+  // Split into blocks
+  let questionBlocks = normalizedText.split(
+    /(?=TrueFalse:|MCQ:|\d+\.\s|Question\s*\d*:?\s*)/i
+  );
 
-    if (questionBlocks.length <= 1) {
-      questionBlocks = normalizedText.split(/\n\s*\n/);
-    }
+  if (questionBlocks.length <= 1) {
+    questionBlocks = normalizedText.split(/\n\s*\n/);
+  }
 
-    const parsed = questionBlocks
-      .map((rawBlock, index): ParsedQuestion | null => {
-        const block = rawBlock.trim();
-        if (!block) return null;
+  const parsed = questionBlocks
+    .map((rawBlock, index): ParsedQuestion | null => {
+      const block = rawBlock.trim();
+      if (!block) return null;
 
-        let type: ParsedQuestion["type"] = "short answer";
-        let questionText = "";
-        let choices: QuestionChoice[] = [];
-        let correctAnswer = "";
+      let type: ParsedQuestion["type"] = "short answer";
+      let questionText = "";
+      let choices: QuestionChoice[] = [];
+      let correctAnswer = "";
 
-        // -------------------------
-        // TRUE/FALSE
-        // -------------------------
-        const isTrueFalse =
-          /^TrueFalse:/i.test(block) ||
-          (!!block.match(/true\s*\/\s*false|true or false|t\s*\/\s*f/gi) &&
-            !block.match(/[A-D]\)/));
+      // Helper: ensure question mark
+      const ensureQuestionMark = (s: string) => {
+        const t = (s || "").trim();
+        if (!t) return t;
+        return /[.?!]$/.test(t) ? t : `${t}?`;
+      };
 
-        if (isTrueFalse) {
-          type = "true/false";
+      // -------------------------
+      // TRUE/FALSE
+      // -------------------------
+      const isTrueFalse =
+        /^TrueFalse:/i.test(block) ||
+        (!!block.match(/true\s*\/\s*false|true or false|t\s*\/\s*f/gi) &&
+          !block.match(/[A-D]\)/));
 
-          // Extract question
-          const qMatch =
-            block.match(/Question:\s*([\s\S]+?)(?=Answer:|$)/i) ||
-            block.match(/^\s*TrueFalse:\s*([\s\S]+?)(?=Answer:|$)/i) ||
-            block.match(/^\s*([\s\S]+?)(?=Answer:|$)/i);
+      if (isTrueFalse) {
+        type = "true/false";
 
-          questionText = (qMatch?.[1] ?? block)
-            .replace(/Answer:.*/i, "")
-            .replace(/\([^)]*\)/g, "")
-            .replace(/\s+/g, " ")
-            .trim();
+        // Extract question
+        const qMatch =
+          block.match(/Question:\s*([\s\S]+?)(?=Answer:|Correct Answer:|$)/i) ||
+          block.match(/^\s*TrueFalse:\s*([\s\S]+?)(?=Answer:|Correct Answer:|$)/i) ||
+          block.match(/^\s*([\s\S]+?)(?=Answer:|Correct Answer:|$)/i);
 
-          // Extract answer
-          const aMatch = block.match(/Answer:\s*(True|False)/i);
-          if (aMatch) correctAnswer = aMatch[1].trim();
-
-          if (questionText && !/[.?!]$/.test(questionText)) questionText += "?";
-
-          choices = [
-            { letter: "A", text: "True", isCorrect: correctAnswer.toLowerCase() === "true" },
-            { letter: "B", text: "False", isCorrect: correctAnswer.toLowerCase() === "false" },
-          ];
-
-          return {
-            number: index + 1,
-            text: questionText,
-            type,
-            choices,
-            correctAnswer,
-          };
-        }
-
-        // -------------------------
-        // MCQ
-        // -------------------------
-        const isMCQ = /^MCQ:/i.test(block) || /[A-D]\)/.test(block);
-
-        if (isMCQ) {
-          type = "multiple choice";
-
-          // Question text before first choice
-          const qMatch =
-            block.match(/Question:\s*([\s\S]+?)(?=[A-D]\)|$)/i) ||
-            block.match(/^\s*MCQ:\s*([\s\S]+?)(?=[A-D]\)|$)/i) ||
-            block.match(/^\s*([\s\S]+?)(?=[A-D]\)|$)/i);
-
-          questionText = (qMatch?.[1] ?? block)
-            .replace(/Answer:.*/i, "")
-            .replace(/Correct Answer:.*/i, "")
-            .replace(/\([^)]*\)/g, "")
-            .replace(/\s+/g, " ")
-            .trim();
-
-          if (questionText && !/[.?!]$/.test(questionText)) questionText += "?";
-
-          // Choices
-          const choiceRegex = /([A-D])[.)]\s*([^\n]+)/gi;
-          const foundChoices: Record<string, string> = {};
-          let m: RegExpExecArray | null;
-
-          while ((m = choiceRegex.exec(block)) !== null) {
-            foundChoices[m[1].toUpperCase()] = m[2].trim();
-          }
-
-          // Correct answer
-          const aMatch =
-            block.match(/Correct Answer:\s*([A-D])/i) ||
-            block.match(/Answer:\s*([A-D])/i);
-
-          if (aMatch) correctAnswer = aMatch[1].toUpperCase();
-
-          choices = Object.entries(foundChoices).map(([letter, txt]) => ({
-            letter,
-            text: txt.replace(/\([^)]*\)/g, "").trim(),
-            isCorrect: letter === correctAnswer,
-          }));
-
-          return {
-            number: index + 1,
-            text: questionText,
-            type,
-            choices,
-            correctAnswer,
-          };
-        }
-
-        // -------------------------
-        // SHORT ANSWER fallback
-        // -------------------------
-        questionText = block
-          .replace(/^\d+[\.\)]\s*/, "")
+        questionText = (qMatch?.[1] ?? block)
+          .replace(/(Correct\s*Answer|Answer)\s*:.*$/i, "")
+          .replace(/\([^)]*\)/g, "")
           .replace(/\s+/g, " ")
           .trim();
 
+        // Extract answer
+        const aMatch =
+          block.match(/Correct\s*Answer:\s*(True|False)/i) ||
+          block.match(/Answer:\s*(True|False)/i);
+        if (aMatch) correctAnswer = aMatch[1].trim();
+
+        questionText = ensureQuestionMark(questionText);
+
+        choices = [
+          { letter: "A", text: "True", isCorrect: correctAnswer.toLowerCase() === "true" },
+          { letter: "B", text: "False", isCorrect: correctAnswer.toLowerCase() === "false" },
+        ];
+
         if (!questionText) return null;
-        if (!/[.?!]$/.test(questionText)) questionText += "?";
 
         return {
           number: index + 1,
           text: questionText,
           type,
-          choices: [],
-          correctAnswer: "",
+          choices,
+          correctAnswer,
         };
-      })
-      .filter((q): q is ParsedQuestion => q !== null);
+      }
 
-    return parsed;
-  };
+      // -------------------------
+      // MCQ
+      // -------------------------
+      const hasChoices =
+        /^MCQ:/i.test(block) ||
+        /(^|\n)\s*[A-Da-d][\).\]]\s+.+/m.test(block) ||
+        /(^|\n)\s*[A-Da-d]\.\s+.+/m.test(block);
+
+      if (hasChoices) {
+        type = "multiple choice";
+
+        // Extract correct answer letter if exists
+        const ansLetterMatch =
+          block.match(/Correct\s*Answer:\s*([A-Da-d])\b/i) ||
+          block.match(/Answer:\s*([A-Da-d])\b/i);
+        if (ansLetterMatch) correctAnswer = ansLetterMatch[1].toUpperCase();
+
+        // Extract question text (everything before first choice)
+        const questionMatch =
+          block.match(/Question:\s*([\s\S]+?)(?=(\n\s*[A-Da-d][\).\]]\s)|(\n\s*[A-Da-d]\.\s)|$)/i) ||
+          block.match(/^\s*MCQ:\s*([\s\S]+?)(?=(\n\s*[A-Da-d][\).\]]\s)|(\n\s*[A-Da-d]\.\s)|$)/i) ||
+          block.match(/^\s*([\s\S]+?)(?=(\n\s*[A-Da-d][\).\]]\s)|(\n\s*[A-Da-d]\.\s)|$)/i);
+
+        questionText = (questionMatch?.[1] ?? block)
+          .replace(/(Correct\s*Answer|Answer)\s*:.*$/i, "")
+          .replace(/\([^)]*\)/g, "")
+          .replace(/\s+/g, " ")
+          .trim();
+
+        questionText = ensureQuestionMark(questionText);
+
+        // Extract choices lines: A) / A. / A] etc
+        const choiceLines =
+          block.match(/(^|\n)\s*([A-Da-d])[\).\]]\s+.+(?=(\n\s*[A-Da-d][\).\]]\s)|(\n\s*[A-Da-d]\.\s)|$)/g) ||
+          block.match(/(^|\n)\s*([A-Da-d])\.\s+.+(?=(\n\s*[A-Da-d]\.\s)|$)/g) ||
+          [];
+
+        choiceLines.forEach((line) => {
+          const m = line.trim().match(/^([A-Da-d])[\).\]]\s+(.+)$/i) || line.trim().match(/^([A-Da-d])\.\s+(.+)$/i);
+          if (!m) return;
+
+          const letter = m[1].toUpperCase();
+          const text = m[2].trim();
+
+          const isCorrect =
+            (correctAnswer && letter === correctAnswer) ||
+            block.includes(`Correct Answer: ${letter}`) ||
+            block.includes(`Answer: ${letter}`);
+
+          if (isCorrect) correctAnswer = letter;
+
+          choices.push({
+            letter,
+            text,
+            isCorrect,
+          });
+        });
+
+        // If we detected MCQ but didn't parse any choices, fallback safely
+        if (choices.length === 0) {
+          // Sometimes choices are inline, very messy; keep it as short answer instead
+          type = "short answer";
+          choices = [];
+          correctAnswer = "";
+        } else {
+          // Clean question again: remove any choice-like residues
+          questionText = questionText
+            .replace(/[A-Da-d][\).\]]\s+.+/g, "")
+            .replace(/[A-Da-d]\.\s+.+/g, "")
+            .replace(/\s+/g, " ")
+            .trim();
+          questionText = ensureQuestionMark(questionText);
+        }
+
+        if (!questionText) return null;
+
+        return {
+          number: index + 1,
+          text: questionText,
+          type,
+          choices,
+          correctAnswer,
+        };
+      }
+
+      // -------------------------
+      // SHORT ANSWER (fallback)
+      // -------------------------
+      type = "short answer";
+
+      // Try to extract question content
+      const shortQMatch =
+        block.match(/Question\s*\d*:?\s*([\s\S]+)/i) ||
+        block.match(/Question:\s*([\s\S]+)/i) ||
+        [null, block];
+
+      questionText = (shortQMatch?.[1] ?? block)
+        .replace(/(Correct\s*Answer|Answer)\s*:.*$/i, "")
+        .replace(/\([^)]*\)/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      questionText = ensureQuestionMark(questionText);
+
+      if (!questionText) return null;
+
+      return {
+        number: index + 1,
+        text: questionText,
+        type,
+        choices: [],
+        correctAnswer: "",
+      };
+    })
+    .filter((q): q is ParsedQuestion => q !== null);
+
+  return parsed;
+};
 
         // Extract question and answer using a more flexible regex
         const questionMatch = block.match(/Question:([\s\S]+?)(?=Answer:|$)/i) || 
