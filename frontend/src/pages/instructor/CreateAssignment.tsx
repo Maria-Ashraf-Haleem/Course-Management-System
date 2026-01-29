@@ -106,9 +106,9 @@ export default function CreateAssignment() {
         let answerMatch = block.match(/Answer:\s*(True|False)/i);
         if (!answerMatch) {
           if (block.match(/\bTrue\b/i) && !block.match(/\bFalse\b/i)) {
-            answerMatch = [null, 'True'];
+            answerMatch = ['', 'True'];
           } else if (block.match(/\bFalse\b/i) && !block.match(/\bTrue\b/i)) {
-            answerMatch = [null, 'False'];
+            answerMatch = ['', 'False'];
           }
         }
         
@@ -145,7 +145,7 @@ export default function CreateAssignment() {
         const questionMatch = block.match(/Question:([\s\S]+?)(?=[A-D]\)|$)/i) || 
                             block.match(/([\s\S]+?)(?=[A-D]\)|$)/i) ||
                             block.match(/([\s\S]+?)(?=\n[A-D]\.|$)/i) ||
-                            [null, block];
+                            ['', block];
         
         if (questionMatch) {
           questionText = questionMatch[1]?.trim() || block;
@@ -1033,7 +1033,7 @@ export default function CreateAssignment() {
                 rows={4}
                 className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-gray-900 focus:outline-none focus:border-sky-500"
                 placeholder="Enter assignment description and instructions"
-              ></textarea>
+              />
             </div>
             <div className="md:col-span-2 flex justify-end gap-3 mt-6">
               <button
