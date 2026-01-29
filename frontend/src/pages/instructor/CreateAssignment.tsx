@@ -36,6 +36,7 @@ export default function CreateAssignment() {
   const [showAIModal, setShowAIModal] = useState(false);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [numQuestions, setNumQuestions] = useState<number>(10);
+  
   interface QuestionChoice {
     letter: string;
     text: string;
@@ -60,27 +61,24 @@ export default function CreateAssignment() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [generatedQuestions, setGeneratedQuestions] = useState<string>("");
-  const [aiGeneratorPdf, setAiGeneratorPdf] = useState<File | null>(null); // PDF from AI Generator
+  const [aiGeneratorPdf, setAiGeneratorPdf] = useState<File | null>(null);
 
   // Parse questions from generated text
   const parseQuestions = (text: string): ParsedQuestion[] => {
     console.log('Raw text for parsing:', text);
     if (!text) return [];
-    console.log('Parsing questions from text:', text);
-    if (!text) return [];
     
     // First, normalize line endings and clean up the text
     const normalizedText = text
-      .replace(/\r\n/g, '\n')  // Normalize line endings
-      .replace(/\r/g, '\n')     // Handle any remaining \r
-      .replace(/\n{3,}/g, '\n\n'); // Normalize multiple newlines
+      .replace(/\r\n/g, '\n')
+      .replace(/\r/g, '\n')
+      .replace(/\n{3,}/g, '\n\n');
 
     console.log('Normalized text:', normalizedText);
     
-    // Try to split by question blocks (either numbered or TrueFalse:/MCQ:)
+    // Try to split by question blocks
     let questionBlocks = normalizedText.split(/(?=TrueFalse:|MCQ:|\d+\.\s|Question\s*\d*:?\s*)/i);
     
-    // If no questions were found with the pattern, try to split by double newlines
     if (questionBlocks.length <= 1) {
       questionBlocks = normalizedText.split(/\n\s*\n/);
     }
@@ -94,7 +92,6 @@ export default function CreateAssignment() {
       let choices: QuestionChoice[] = [];
       let correctAnswer = '';
       
-      // Handle True/False questions
       const isTrueFalse = block.match(/^TrueFalse:/i) || 
                          (block.match(/true\s*\/\s*false|true or false|t\s*\/\s*f/gi) && 
                           !block.match(/[A-D]\)/));
@@ -102,15 +99,12 @@ export default function CreateAssignment() {
       if (isTrueFalse) {
         type = 'true/false';
         
-        // Extract question and answer using a more flexible regex
         const questionMatch = block.match(/Question:([\s\S]+?)(?=Answer:|$)/i) || 
                             block.match(/([\s\S]+?)(?=Answer:|$)/i) ||
-                            [null, block]; // Fallback to entire block if no match
+                            [null, block];
         
-        // More flexible answer matching
         let answerMatch = block.match(/Answer:\s*(True|False)/i);
         if (!answerMatch) {
-          // Try to find True/False in the text
           if (block.match(/\bTrue\b/i) && !block.match(/\bFalse\b/i)) {
             answerMatch = [null, 'True'];
           } else if (block.match(/\bFalse\b/i) && !block.match(/\bTrue\b/i)) {
@@ -121,7 +115,6 @@ export default function CreateAssignment() {
         if (questionMatch) {
           questionText = questionMatch[1]?.trim() || block;
           
-          // Clean up any remaining answer text in the question
           questionText = questionText
             .replace(/Answer:.*/i, '')
             .replace(/\([^)]*\)/g, '')
@@ -133,7 +126,6 @@ export default function CreateAssignment() {
           }
         }
         
-        // Set correct answer if found
         if (answerMatch) {
           correctAnswer = answerMatch[1].trim();
           choices = [
@@ -141,27 +133,23 @@ export default function CreateAssignment() {
             { letter: 'B', text: 'False', isCorrect: correctAnswer.toLowerCase() === 'false' }
           ];
         } else {
-          // Default choices if answer not found
           choices = [
             { letter: 'A', text: 'True', isCorrect: false },
             { letter: 'B', text: 'False', isCorrect: false }
           ];
         }
       } 
-      // Handle Multiple Choice questions
       else if (block.match(/^MCQ:/i) || block.match(/[A-D]\)/)) {
         type = 'multiple choice';
         
-        // Extract question (everything before the first choice)
         const questionMatch = block.match(/Question:([\s\S]+?)(?=[A-D]\)|$)/i) || 
                             block.match(/([\s\S]+?)(?=[A-D]\)|$)/i) ||
                             block.match(/([\s\S]+?)(?=\n[A-D]\.|$)/i) ||
-                            [null, block]; // Fallback to entire block if no match
+                            [null, block];
         
         if (questionMatch) {
           questionText = questionMatch[1]?.trim() || block;
           
-          // Clean up the question text
           questionText = questionText
             .replace(/Answer:.*/i, '')
             .replace(/\([^)]*\)/g, '')
@@ -173,18 +161,15 @@ export default function CreateAssignment() {
           }
         }
         
-        // Extract choices and correct answer
         const choiceRegex = /([A-D])[.)]\s*([^\n]+)/gi;
         let match;
         const foundChoices: {[key: string]: string} = {};
         
-        // First pass: collect all choices
         while ((match = choiceRegex.exec(block)) !== null) {
           const letter = match[1].toUpperCase();
           foundChoices[letter] = match[2].trim();
         }
         
-        // Second pass: check for correct answer
         const answerMatch = block.match(/Correct Answer:\s*([A-D])/i) || 
                           block.match(/Answer:\s*([A-D])/i);
                           
@@ -192,7 +177,6 @@ export default function CreateAssignment() {
           correctAnswer = answerMatch[1].toUpperCase();
         }
         
-        // Create choices array
         Object.entries(foundChoices).forEach(([letter, text]) => {
           choices.push({
             letter,
@@ -201,7 +185,6 @@ export default function CreateAssignment() {
           });
         });
         
-        // If no choices were found but we have a correct answer, add it
         if (choices.length === 0 && correctAnswer) {
           choices = [
             { letter: 'A', text: 'True', isCorrect: correctAnswer === 'A' },
@@ -209,13 +192,11 @@ export default function CreateAssignment() {
           ];
         }
       }
-      // Handle numbered questions (fallback)
       else {
-        // If we have any text, treat it as a short answer question
         if (block.trim()) {
           type = 'short answer';
           questionText = block
-            .replace(/^\d+[\.\)]\s*/, '') // Remove leading number
+            .replace(/^\d+[\.\)]\s*/, '')
             .replace(/\s+/g, ' ')
             .trim();
           
@@ -235,7 +216,6 @@ export default function CreateAssignment() {
         return null;
       }
       
-      // Ensure question ends with a question mark if it's a question
       if (questionText && !/[.?!]$/.test(questionText)) {
         questionText += '?';
       }
@@ -249,12 +229,11 @@ export default function CreateAssignment() {
         choices,
         correctAnswer
       };
-    }).filter((q): q is ParsedQuestion => q !== null); // Remove any null entries
+    }).filter((q): q is ParsedQuestion => q !== null);
 
     return result;
   };
 
-  // Parse questions whenever generatedQuestions changes
   useEffect(() => {
     try {
       if (generatedQuestions) {
@@ -262,12 +241,11 @@ export default function CreateAssignment() {
         const parsed = parseQuestions(generatedQuestions);
         console.log('Parsed questions:', parsed);
         
-        // If no questions were parsed, try to handle the text as a simple list
         if (!parsed.length && generatedQuestions) {
           console.log('No questions parsed, trying fallback parsing...');
           const fallbackQuestions = generatedQuestions
-            .split(/\n\s*\n+/) // Split by empty lines
-            .filter(q => q.trim().length > 10) // Filter out very short lines
+            .split(/\n\s*\n+/)
+            .filter(q => q.trim().length > 10)
             .map((q, i) => ({
               number: i + 1,
               text: q.replace(/^\d+[\.\)]\s*/, '').trim(),
@@ -286,7 +264,6 @@ export default function CreateAssignment() {
       }
     } catch (error) {
       console.error('Error parsing questions:', error);
-      // Try to show something useful even if parsing fails
       if (generatedQuestions) {
         const fallback = [{
           number: 1,
@@ -303,14 +280,12 @@ export default function CreateAssignment() {
   }, [generatedQuestions]);
 
   useEffect(() => {
-    // Load courses from API and lock course if provided in query
     const loadData = async () => {
       try {
         const coursesResponse = await getCourses();
         const list = coursesResponse || [];
         setCourses(list);
 
-        // If opened from CourseDetail, lock the course selection
         if (lockedCourseId) {
           setFormData((prev) => ({ ...prev, course_id: String(lockedCourseId) }));
         }
@@ -325,17 +300,14 @@ export default function CreateAssignment() {
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
 
-    // Validate title
     if (!formData.title.trim()) {
       newErrors.title = "Assignment title is required";
     }
 
-    // Validate course_id
     if (!formData.course_id) {
       newErrors.course_id = "Course selection is required";
     }
 
-    // Validate deadline
     if (!formData.deadline) {
       newErrors.deadline = "Deadline is required";
     } else {
@@ -346,7 +318,6 @@ export default function CreateAssignment() {
       }
     }
 
-    // Validate max_grade
     if (!formData.max_grade || formData.max_grade <= 0) {
       newErrors.max_grade = "Maximum grade must be greater than 0";
     }
@@ -358,7 +329,6 @@ export default function CreateAssignment() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate form before submitting
     if (!validateForm()) {
       return;
     }
@@ -366,10 +336,8 @@ export default function CreateAssignment() {
     setIsSubmitting(true);
 
     try {
-      // Format the deadline to ISO string
       const deadlineDate = new Date(formData.deadline);
 
-      // Prepare data for API call
       const assignmentData: any = {
         title: formData.title,
         description: formData.description || undefined,
@@ -378,7 +346,6 @@ export default function CreateAssignment() {
         max_grade: parseFloat(formData.max_grade.toString()),
       };
 
-      // If PDF is attached, send as FormData
       if (assignmentPdf) {
         const formDataToSend = new FormData();
         formDataToSend.append("title", assignmentData.title);
@@ -388,7 +355,6 @@ export default function CreateAssignment() {
         formDataToSend.append("max_grade", assignmentData.max_grade.toString());
         formDataToSend.append("pdf_file", assignmentPdf);
 
-        // Call API with FormData using axios
         await api.post("/assignments", formDataToSend, {
           headers: {
             "Content-Type": "multipart/form-data",
@@ -397,7 +363,6 @@ export default function CreateAssignment() {
 
         toast.success("Assignment created successfully with PDF attachment!");
       } else {
-        // Call API to create assignment without PDF
         await createAssignment(assignmentData);
         toast.success("Assignment created successfully!");
       }
@@ -408,7 +373,6 @@ export default function CreateAssignment() {
     } catch (error: any) {
       console.error("Error creating assignment:", error);
 
-      // Show more specific error message
       let errorMessage = "Failed to create assignment. Please try again.";
 
       if (error?.response?.data?.detail) {
@@ -430,18 +394,14 @@ export default function CreateAssignment() {
   };
 
   const handleInputChange = (
-    e: React.ChangeEvent
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     if (name === "course_id" && lockedCourseId) {
-      // Prevent changing course when locked
       return;
     }
     setFormData((prev) => ({ ...prev, [name]: value }));
 
-    // Clear error for this field when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
@@ -455,13 +415,11 @@ export default function CreateAssignment() {
         return;
       }
       setAssignmentPdf(file);
-      // Create preview URL
       const url = URL.createObjectURL(file);
       setPdfPreviewUrl(url);
     }
   };
 
-  // Handle PDF upload from AI Generator
   const handleAIGeneratorPdfUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -470,8 +428,6 @@ export default function CreateAssignment() {
         return;
       }
       setPdfFile(file);
-      // Don't attach original PDF yet - wait for questions PDF to be generated
-      // Clear any previous assignment PDF
       if (assignmentPdf && pdfPreviewUrl) {
         URL.revokeObjectURL(pdfPreviewUrl);
       }
@@ -504,15 +460,10 @@ export default function CreateAssignment() {
     setAiGeneratorPdf(null);
   };
 
-  // Clear all AI Generator data to start fresh
   const handleClearAIGenerator = () => {
-    // Clear generated questions
     setGeneratedQuestions("");
-    
-    // Clear PDF file
     setPdfFile(null);
     
-    // Clear generated PDF and preview
     if (pdfPreviewUrl) {
       URL.revokeObjectURL(pdfPreviewUrl);
     }
@@ -520,11 +471,8 @@ export default function CreateAssignment() {
     setPdfPreviewUrl(null);
     setAiGeneratorPdf(null);
     
-    // Remove generated questions from description if they were added
     setFormData((prev) => {
       const description = prev.description || "";
-      // Remove the "--- Generated Questions ---" section if it exists
-      // Split by the marker and take only the part before it
       const parts = description.split("--- Generated Questions ---");
       const cleanedDescription = parts.length > 1 ? parts[0].trim() : description;
       return {
@@ -536,7 +484,6 @@ export default function CreateAssignment() {
     toast.success("AI Generator cleared. You can now generate new questions.");
   };
 
-  // Generate PDF from questions text using backend
   const generatePdfFromQuestions = async (questions: string, assignmentTitle: string = "Assignment Questions") => {
     try {
       console.log("[PDF Generation] Starting PDF generation...", { assignmentTitle, questionsLength: questions.length });
@@ -548,7 +495,6 @@ export default function CreateAssignment() {
       console.log("[PDF Generation] Sending request to backend...");
       const response = await api.post("/assignments/ai/generate-questions-pdf", formData, {
         responseType: 'blob',
-        // Don't set Content-Type header - axios will set it automatically with boundary for FormData
       });
       
       console.log("[PDF Generation] Response received:", {
@@ -558,12 +504,10 @@ export default function CreateAssignment() {
         dataSize: response.data?.size || 0
       });
       
-      // Check if response is actually a PDF
       if (response.data instanceof Blob) {
         const blob = response.data;
         console.log("[PDF Generation] Blob created:", { size: blob.size, type: blob.type });
         
-        // Verify it's a PDF
         if (!blob.type.includes('pdf') && !blob.type.includes('application/octet-stream')) {
           console.warn("[PDF Generation] Unexpected content type:", blob.type);
         }
@@ -585,7 +529,6 @@ export default function CreateAssignment() {
         status: error?.response?.status
       });
       
-      // If it's a blob error, try to read it as text
       if (error?.response?.data instanceof Blob) {
         try {
           const text = await error.response.data.text();
@@ -595,7 +538,6 @@ export default function CreateAssignment() {
         }
       }
       
-      // Fallback: create a simple text file
       const textBlob = new Blob([questions], { type: 'text/plain' });
       const textFile = new File([textBlob], `${assignmentTitle.replace(/\s+/g, '_')}_Questions.txt`, {
         type: 'text/plain'
@@ -605,24 +547,12 @@ export default function CreateAssignment() {
     }
   };
 
-  const handlePDFUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.type !== "application/pdf") {
-        toast.error("Please upload a PDF file");
-        return;
-      }
-      setPdfFile(file);
-    }
-  };
-
   const handleAIGenerate = async () => {
     if (!pdfFile) {
       toast.error("Please upload a PDF file first");
       return;
     }
 
-    // Log the current state value
     console.log("[AI Generate] Current numQuestions state:", numQuestions);
     console.log("[AI Generate] Current numQuestions type:", typeof numQuestions);
 
@@ -649,7 +579,6 @@ export default function CreateAssignment() {
       console.log("[AI Generate] Response type:", typeof data);
       console.log("[AI Generate] Response keys:", Object.keys(data || {}));
       
-      // Extract questions from response - handle different response formats
       let questions = "";
       if (typeof data === "string") {
         questions = data;
@@ -678,13 +607,10 @@ export default function CreateAssignment() {
       setGeneratedQuestions(questions);
       console.log("[AI Generate] Questions set in state, length:", questions.length);
       
-      // Dismiss loading toast on success
       toast.dismiss("ai-generate");
       
-      // Show success message
       toast.success(`Successfully generated ${questions.length} characters of questions!`, { duration: 3000 });
       
-      // Count questions for user feedback
       const questionCount = (questions.match(/\d+\./g) || []).length || 
                            (questions.match(/Question:/gi) || []).length ||
                            (questions.match(/\?/g) || []).length;
@@ -695,7 +621,6 @@ export default function CreateAssignment() {
         questionsLength: questions.length
       });
       
-      // Populate assignment form with generated content
       if (questions && questions.trim().length > 0) {
         const countMessage = questionCount >= numQuestions 
           ? `Generated ${questionCount} questions (requested ${numQuestions})`
@@ -710,7 +635,6 @@ export default function CreateAssignment() {
             : `--- Generated Questions ---\n\n${questions}`,
         }));
         
-        // Generate PDF from questions and replace original PDF
         try {
           setIsGeneratingPdf(true);
           toast.loading("Generating PDF with questions...", { id: "pdf-gen" });
@@ -723,12 +647,10 @@ export default function CreateAssignment() {
             type: questionsPdf.type
           });
           
-          // Replace original PDF with questions PDF
           setAssignmentPdf(questionsPdf);
-          setAiGeneratorPdf(questionsPdf); // Mark as from AI Generator
+          setAiGeneratorPdf(questionsPdf);
           console.log("[AI Generate] PDF set in state");
           
-          // Create preview URL for the new PDF
           if (pdfPreviewUrl) {
             URL.revokeObjectURL(pdfPreviewUrl);
             console.log("[AI Generate] Previous preview URL revoked");
@@ -737,7 +659,6 @@ export default function CreateAssignment() {
           setPdfPreviewUrl(url);
           console.log("[AI Generate] Preview URL created:", url);
           
-          // Force state update and verify PDF is set
           console.log("[AI Generate] Verifying PDF state:", {
             assignmentPdf: !!questionsPdf,
             pdfPreviewUrl: !!url,
@@ -745,7 +666,6 @@ export default function CreateAssignment() {
             pdfSize: questionsPdf.size
           });
           
-          // Small delay to ensure state updates
           setTimeout(() => {
             console.log("[AI Generate] State after update:", {
               assignmentPdf: assignmentPdf?.name,
@@ -753,13 +673,11 @@ export default function CreateAssignment() {
             });
           }, 100);
           
-          // Show success message with PDF info
           toast.success(`Questions PDF generated and attached! (${(questionsPdf.size / 1024).toFixed(1)} KB)`, { id: "pdf-gen", duration: 5000 });
           
           console.log("[AI Generate] Success toast shown");
           setIsGeneratingPdf(false);
           
-          // Force a state update to ensure PDF preview renders
           setTimeout(() => {
             console.log("[AI Generate] PDF state verification after update:", {
               assignmentPdf: assignmentPdf?.name,
@@ -767,18 +685,15 @@ export default function CreateAssignment() {
               aiGeneratorPdf: aiGeneratorPdf?.name
             });
             
-            // Scroll to PDF section in the main form (not modal)
             const pdfSection = document.querySelector('[data-pdf-section]');
             if (pdfSection) {
               pdfSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              // Highlight the section briefly
               pdfSection.classList.add('ring-4', 'ring-purple-300', 'ring-opacity-50');
               setTimeout(() => {
                 pdfSection.classList.remove('ring-4', 'ring-purple-300', 'ring-opacity-50');
               }, 3000);
             } else {
               console.warn("[AI Generate] PDF section not found in DOM, trying alternative selector");
-              // Try alternative selector
               const altSection = document.querySelector('.border-2.border-dashed.border-gray-300');
               if (altSection) {
                 altSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -794,7 +709,6 @@ export default function CreateAssignment() {
             stack: error?.stack
           });
           
-          // Try to read error response if it's a blob
           if (error?.response?.data instanceof Blob) {
             error.response.data.text().then((text: string) => {
               console.error("[AI Generate] Error response text:", text);
@@ -807,8 +721,6 @@ export default function CreateAssignment() {
           toast.error(`Questions generated but PDF creation failed: ${errorMessage}`, { id: "pdf-gen", duration: 8000 });
           setIsGeneratingPdf(false);
         }
-        
-        // Don't close modal - let user review questions first
       } else {
         console.error("[AI Generate] No questions received or questions are empty");
         console.error("[AI Generate] Data received:", data);
@@ -821,23 +733,19 @@ export default function CreateAssignment() {
       console.error("[AI Generate] Error message:", error?.message);
       console.error("[AI Generate] Full error object:", JSON.stringify(error, null, 2));
       
-      // Dismiss loading toast
       toast.dismiss("ai-generate");
       
-      // Handle 401 Unauthorized specifically
       if (error?.response?.status === 401) {
         console.error("[AI Generate] 401 Unauthorized - Authentication failed");
         console.error("[AI Generate] Check if token exists and is valid");
         toast.error("Authentication failed. Please log out and log in again.", { duration: 8000 });
       }
-      // Handle 503 Service Unavailable (Ollama not running)
       else if (error?.response?.status === 503) {
         const errorMessage = error?.response?.data?.detail || "Ollama service is not available. Please ensure Ollama is running.";
         console.error("[AI Generate] 503 Service Unavailable - Ollama not running");
         console.error("[AI Generate] Error detail:", errorMessage);
-        toast.error(errorMessage, { duration: 10000 }); // Longer duration for important instructions
+        toast.error(errorMessage, { duration: 10000 });
       }
-      // Handle timeout errors specifically
       else if (error?.code === "ECONNABORTED" || error?.message?.includes("timeout")) {
         toast.error("AI generation timed out. The PDF might be too large or the model is taking longer than expected. Please try with a smaller PDF or fewer questions.", { duration: 8000 });
       } else {
@@ -846,11 +754,10 @@ export default function CreateAssignment() {
       }
     } finally {
       setIsGenerating(false);
-      toast.dismiss("ai-generate"); // Ensure loading toast is dismissed
+      toast.dismiss("ai-generate");
     }
   };
 
-  // Debug log the parsed questions
   useEffect(() => {
     if (parsedQuestions && parsedQuestions.length > 0) {
       console.log('Current parsed questions:', parsedQuestions);
@@ -860,9 +767,7 @@ export default function CreateAssignment() {
   return (
     <div className="max-w-4xl mx-auto p-4 bg-gray-200 text-gray-900">
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
         <div className="flex items-center gap-4 mb-8">
-          {/* AI Generator Button */}
           <button
             onClick={() => setShowAIModal(true)}
             className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all shadow-lg font-semibold"
@@ -895,7 +800,6 @@ export default function CreateAssignment() {
           </div>
         </div>
 
-        {/* Form */}
         <div className="bg-gray-100/70 backdrop-blur-xl rounded-3xl p-8 w-full max-w-4xl mx-auto shadow-xl border border-gray-300">
           <form
             onSubmit={handleSubmit}
@@ -991,7 +895,6 @@ export default function CreateAssignment() {
                 <p className="text-red-600 text-xs mt-1">{errors.max_grade}</p>
               )}
             </div>
-            {/* PDF Attachment Section */}
             <div className="md:col-span-2" data-pdf-section>
               <label className="block text-sm font-medium text-gray-800 mb-2">
                 Assignment PDF (Optional)
@@ -1071,7 +974,6 @@ export default function CreateAssignment() {
                       </button>
                     </div>
                   </div>
-                  {/* PDF Preview */}
                   {pdfPreviewUrl && assignmentPdf && (
                     <div className="mt-4 border-2 border-purple-300 rounded-lg overflow-hidden bg-purple-50">
                       <div className="bg-purple-100 px-4 py-2 border-b border-purple-200 flex items-center justify-between">
@@ -1107,7 +1009,6 @@ export default function CreateAssignment() {
                       </div>
                     </div>
                   )}
-                  {/* Debug info (remove in production) */}
                   {process.env.NODE_ENV === 'development' && assignmentPdf && (
                     <div className="mt-2 text-xs text-gray-500">
                       Debug: PDF loaded - {assignmentPdf.name} ({assignmentPdf.size} bytes, {assignmentPdf.type})
@@ -1162,7 +1063,6 @@ export default function CreateAssignment() {
         </div>
       </div>
 
-      {/* AI Generator Modal */}
       {showAIModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl border border-gray-200 shadow-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-auto">
@@ -1174,7 +1074,6 @@ export default function CreateAssignment() {
                 <h2 className="text-2xl font-bold text-gray-900">AI Question Generator</h2>
               </div>
               <div className="flex items-center gap-2">
-                {/* Clear button - only show if there's something to clear */}
                 {(generatedQuestions || pdfFile || assignmentPdf) && (
                   <button
                     onClick={handleClearAIGenerator}
@@ -1191,11 +1090,9 @@ export default function CreateAssignment() {
                 <button
                   onClick={() => {
                     setShowAIModal(false);
-                    // Don't clear pdfFile if questions were generated - keep it for assignment
                     if (!generatedQuestions) {
                       setPdfFile(null);
                     }
-                    // Don't clear generatedQuestions - user might want to review them
                   }}
                   className="p-2 text-gray-600 hover:text-gray-800 transition-colors"
                 >
@@ -1205,7 +1102,6 @@ export default function CreateAssignment() {
             </div>
 
             <div className="space-y-6">
-              {/* Include Answers Toggle */}
               <div className="form-group p-4 rounded-lg border-2 bg-white">
                 <label className="flex items-center space-x-2 cursor-pointer">
                   <input
@@ -1230,7 +1126,6 @@ export default function CreateAssignment() {
                 )}
               </div>
 
-              {/* PDF Upload */}
               <div>
                 <label className="block text-sm font-medium text-gray-800 mb-2">
                   Upload PDF Document <span className="text-red-600">*</span>
@@ -1258,7 +1153,6 @@ export default function CreateAssignment() {
                 </div>
               </div>
 
-              {/* Number of Questions */}
               <div>
                 <label className="block text-sm font-medium text-gray-800 mb-2">
                   Number of Questions <span className="text-red-600">*</span>
@@ -1273,7 +1167,6 @@ export default function CreateAssignment() {
                 />
               </div>
 
-              {/* Question Types */}
               <div>
                 <label className="block text-sm font-medium text-gray-800 mb-3">
                   Question Types <span className="text-red-600">*</span>
@@ -1315,7 +1208,6 @@ export default function CreateAssignment() {
                 </div>
               </div>
 
-              {/* Loading State */}
               {isGenerating && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <div className="flex items-center gap-3">
@@ -1328,7 +1220,6 @@ export default function CreateAssignment() {
                 </div>
               )}
 
-              {/* PDF Generation Status */}
               {isGeneratingPdf && (
                 <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-4">
                   <div className="flex items-center gap-3">
@@ -1345,7 +1236,6 @@ export default function CreateAssignment() {
                 </div>
               )}
 
-              {/* Generated Questions Preview */}
               {generatedQuestions && generatedQuestions.trim().length > 0 && !isGenerating && !isGeneratingPdf && (
                 <div className="bg-emerald-50 border-2 border-emerald-300 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
@@ -1395,7 +1285,6 @@ export default function CreateAssignment() {
                                 {q.choices && q.choices.length > 0 ? (
                                   <div className="mt-3 space-y-2 ml-2">
                                     {q.choices.map((choice) => {
-                                      // For true/false questions, check both the text and the letter
                                       const isCorrect = q.type === 'true/false' 
                                         ? (choice.text.toLowerCase() === q.correctAnswer?.toLowerCase() || 
                                            choice.letter === q.correctAnswer)
@@ -1509,13 +1398,10 @@ export default function CreateAssignment() {
                 </div>
               )}
 
-              {/* Action Buttons */}
               <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
                 <button
                   onClick={() => {
                     setShowAIModal(false);
-                    // Keep PDF and questions if they exist - user can review later
-                    // Only clear if no questions were generated
                     if (!generatedQuestions) {
                       setPdfFile(null);
                     }
@@ -1549,8 +1435,6 @@ export default function CreateAssignment() {
                   <button
                     onClick={() => {
                       setShowAIModal(false);
-                      // Keep PDF attached to assignment - don't clear it
-                      // Keep questions in state for user to see in form
                     }}
                     className="px-6 py-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-xl hover:from-emerald-600 hover:to-green-600 transition-all flex items-center gap-2"
                   >
