@@ -9,9 +9,7 @@ import {
   Monitor,
   Moon,
   Sun,
-  Globe,
   Volume2,
-  VolumeX,
   Smartphone,
   Mail,
 } from "lucide-react";
@@ -30,7 +28,7 @@ export default function Settings() {
   });
 
   const [preferences, setPreferences] = useState({
-    theme: "system", // 'light', 'dark', 'system'
+    theme: "system",
     language: "en",
     timezone: "auto",
     dateFormat: "MM/DD/YYYY",
@@ -61,7 +59,6 @@ export default function Settings() {
 
   const saveSettings = async () => {
     try {
-      // TODO: Call API to save settings
       setMessage({ type: "success", text: "Settings saved successfully!" });
       setTimeout(() => setMessage(null), 3000);
     } catch (error) {
@@ -72,7 +69,6 @@ export default function Settings() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto p-6">
-        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
             <button
@@ -93,7 +89,6 @@ export default function Settings() {
           </div>
         </div>
 
-        {/* Message Display */}
         {message && (
           <div
             className={`mb-6 p-4 rounded-lg flex items-center space-x-2 ${
@@ -112,7 +107,6 @@ export default function Settings() {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Theme & Display Preferences */}
           <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex items-center space-x-3 mb-6">
               <Monitor className="w-6 h-6 text-blue-600" />
@@ -210,7 +204,6 @@ export default function Settings() {
             </div>
           </div>
 
-          {/* Notification Settings */}
           <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex items-center space-x-3 mb-6">
               <Bell className="w-6 h-6 text-purple-600" />
@@ -285,7 +278,6 @@ export default function Settings() {
           </div>
         </div>
 
-        {/* Save Button */}
         <div className="mt-8 flex justify-end">
           <button
             onClick={saveSettings}
