@@ -230,61 +230,62 @@ export default function CreateAssignment() {
           }
         }
         
-        if (questionMatch) {
-          questionText = questionMatch[1]?.trim() || block;
-          
-          // Clean up any remaining answer text in the question
-          questionText = questionText
-            .replace(/Answer:.*/i, '')
-            .replace(/\([^)]*\)/g, '')
-            .replace(/\s+/g, ' ')
-            .trim();
-            
-          if (!/[.?!]$/.test(questionText)) {
-            questionText = questionText + '?';
-          }
-        }
-        
-        // Set correct answer if found
-        if (answerMatch) {
-          correctAnswer = answerMatch[1].trim();
-          choices = [
-            { letter: 'A', text: 'True', isCorrect: correctAnswer.toLowerCase() === 'true' },
-            { letter: 'B', text: 'False', isCorrect: correctAnswer.toLowerCase() === 'false' }
-          ];
-        } else {
-          // Default choices if answer not found
-          choices = [
-            { letter: 'A', text: 'True', isCorrect: false },
-            { letter: 'B', text: 'False', isCorrect: false }
-          ];
-        }
-      } 
-      // Handle Multiple Choice questions
-      else if (block.match(/^MCQ:/i) || block.match(/[A-D]\)/)) {
-        type = 'multiple choice';
-        
-        // Extract question (everything before the first choice)
-        const questionMatch = block.match(/Question:([\s\S]+?)(?=[A-D]\)|$)/i) || 
-                            block.match(/([\s\S]+?)(?=[A-D]\)|$)/i) ||
-                            block.match(/([\s\S]+?)(?=\n[A-D]\.|$)/i) ||
-                            [null, block]; // Fallback to entire block if no match
-        
-        if (questionMatch) {
-          questionText = questionMatch[1]?.trim() || block;
-          
-          // Clean up the question text
-          questionText = questionText
-            .replace(/Answer:.*/i, '')
-            .replace(/\([^)]*\)/g, '')
-            .replace(/\s+/g, ' ')
-            .trim();
-            
-          if (!/[.?!]$/.test(questionText)) {
-            questionText = questionText + '?';
-          }
-        }
-        
+       if (questionMatch) {
+  questionText = questionMatch[1]?.trim() || block;
+
+  // Clean up any remaining answer text in the question
+  questionText = questionText
+    .replace(/Answer:.*/i, '')
+    .replace(/\([^)]*\)/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (!/[.?!]$/.test(questionText)) {
+    questionText = questionText + '?';
+  }
+}
+
+// Set correct answer if found
+if (answerMatch) {
+  correctAnswer = answerMatch[1].trim();
+  choices = [
+    { letter: 'A', text: 'True', isCorrect: correctAnswer.toLowerCase() === 'true' },
+    { letter: 'B', text: 'False', isCorrect: correctAnswer.toLowerCase() === 'false' }
+  ];
+} else {
+  // Default choices if answer not found
+  choices = [
+    { letter: 'A', text: 'True', isCorrect: false },
+    { letter: 'B', text: 'False', isCorrect: false }
+  ];
+}
+} else if (block.match(/^MCQ:/i) || block.match(/[A-D]\)/)) {
+  // Handle Multiple Choice questions
+  type = 'multiple choice';
+
+  // Extract question (everything before the first choice)
+  const questionMatch =
+    block.match(/Question:([\s\S]+?)(?=[A-D]\)|$)/i) ||
+    block.match(/([\s\S]+?)(?=[A-D]\)|$)/i) ||
+    block.match(/([\s\S]+?)(?=\n[A-D]\.|$)/i) ||
+    [null, block]; // Fallback to entire block if no match
+
+  if (questionMatch) {
+    questionText = questionMatch[1]?.trim() || block;
+
+    // Clean up the question text
+    questionText = questionText
+      .replace(/Answer:.*/i, '')
+      .replace(/\([^)]*\)/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!/[.?!]$/.test(questionText)) {
+      questionText = questionText + '?';
+    }
+  }
+}
+
         // Extract choices and correct answer
         const choiceRegex = /([A-D])[.)]\s*([^\n]+)/gi;
         let match;
@@ -356,52 +357,53 @@ export default function CreateAssignment() {
             { letter: 'B', text: 'False', isCorrect: false }
           ];
         }
-        // Check for multiple choice
-        else if (block.match(/[A-Da-d]\)\s+.+/)) {
-          type = 'multiple choice';
-          const choiceLines = block.match(/[A-Da-d]\)\s+.+?(?=\n[A-D]\)|$)/gi) || [];
-          
-          choiceLines.forEach(line => {
-            const choiceMatch = line.match(/^([A-Da-d])\)\s+(.+)/i);
-            if (choiceMatch) {
-              const isCorrect = block.includes(`Correct Answer: ${choiceMatch[1].toUpperCase()}`) ||
-                              block.includes(`Answer: ${choiceMatch[1].toUpperCase()}`);
-              
-              if (isCorrect) correctAnswer = choiceMatch[1].toUpperCase();
-              
-              choices.push({
-                letter: choiceMatch[1].toUpperCase(),
-                text: choiceMatch[2].trim(),
-                isCorrect
-              });
-            }
-          });
-        }
-        
-        // Clean up question text
-        questionText = questionText
-          .replace(/[A-Da-d]\)\s+.+/g, '')
-          .replace(/\([^)]*\)/g, '')
-          .replace(/\s+/g, ' ')
-          .trim();
-      }
-      
-      // Ensure question ends with a question mark if it's a question
-      if (questionText && !/[.?!]$/.test(questionText)) {
-        questionText += '?';
-      }
-      
-      if (!questionText) return null;
-      
-      return {
-        number: index + 1,
-        text: questionText,
-        type,
-        choices,
-        correctAnswer
-      };
-    }).filter((q): q is ParsedQuestion => q !== null); // Remove any null entries
-  };
+// Check for multiple choice
+if (block.match(/[A-Da-d]\)\s+.+/)) {
+  type = 'multiple choice';
+  const choiceLines = block.match(/[A-Da-d]\)\s+.+?(?=\n[A-D]\)|$)/gi) || [];
+
+  choiceLines.forEach((line) => {
+    const choiceMatch = line.match(/^([A-Da-d])\)\s+(.+)/i);
+    if (choiceMatch) {
+      const isCorrect =
+        block.includes(`Correct Answer: ${choiceMatch[1].toUpperCase()}`) ||
+        block.includes(`Answer: ${choiceMatch[1].toUpperCase()}`);
+
+      if (isCorrect) correctAnswer = choiceMatch[1].toUpperCase();
+
+      choices.push({
+        letter: choiceMatch[1].toUpperCase(),
+        text: choiceMatch[2].trim(),
+        isCorrect
+      });
+    }
+  });
+}
+
+// Clean up question text
+questionText = questionText
+  .replace(/[A-Da-d]\)\s+.+/g, '')
+  .replace(/\([^)]*\)/g, '')
+  .replace(/\s+/g, ' ')
+  .trim();
+}
+
+// Ensure question ends with a question mark if it's a question
+if (questionText && !/[.?!]$/.test(questionText)) {
+  questionText += '?';
+}
+
+if (!questionText) return null;
+
+return {
+  number: index + 1,
+  text: questionText,
+  type,
+  choices,
+  correctAnswer
+};
+}).filter((q): q is ParsedQuestion => q !== null); // Remove any null entries
+};
 
   // Parse questions whenever generatedQuestions changes
   useEffect(() => {
